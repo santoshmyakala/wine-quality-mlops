@@ -11,7 +11,11 @@ LABEL org.opencontainers.image.source="https://github.com/santoshmyakala/wine-qu
       org.opencontainers.image.description="Wine quality prediction API" \
       org.opencontainers.image.licenses="MIT"
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 MODEL_PATH=/app/models/model.joblib
-RUN useradd --create-home --uid 10001 app
+# Apply Debian security updates so fixed CVEs in the base image don't ship (enforced by Trivy in CI).
+RUN apt-get update \
+ && apt-get upgrade -y --no-install-recommends \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd --create-home --uid 10001 app
 COPY --from=build /install /usr/local
 WORKDIR /app
 COPY --chown=app:app models/model.joblib ./models/model.joblib
