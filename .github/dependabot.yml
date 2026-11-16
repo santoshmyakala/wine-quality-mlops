@@ -4,11 +4,17 @@ updates:
     directory: "/"
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7   # let new releases age before proposing them (supply-chain safety)
   - package-ecosystem: pip
     directory: "/"
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7   # let new releases age before proposing them (supply-chain safety)
   - package-ecosystem: docker
     directory: "/"
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7   # let new releases age before proposing them (supply-chain safety)
