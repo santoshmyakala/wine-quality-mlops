@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1
 # Serving image: contains the API and a model produced by `dvc repro`.
-FROM python:3.12-slim AS build
+FROM python:3.15-slim AS build
 WORKDIR /src
 COPY pyproject.toml ./
 COPY src ./src
 RUN pip install --no-cache-dir --prefix=/install .
 
-FROM python:3.12-slim
+FROM python:3.15-slim
 LABEL org.opencontainers.image.source="https://github.com/santoshmyakala/wine-quality-mlops" \
       org.opencontainers.image.description="Wine quality prediction API" \
       org.opencontainers.image.licenses="MIT"
