@@ -66,6 +66,20 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="Wine Quality API", version=__version__, lifespan=lifespan)
 app.mount("/metrics", make_asgi_app())
 
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",          # flagged by OWASP ZAP rule 10021
+    "Cross-Origin-Resource-Policy": "same-origin",  # flagged by OWASP ZAP rule 90004
+    "Cache-Control": "no-store",
+}
+
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    for name, value in SECURITY_HEADERS.items():
+        response.headers.setdefault(name, value)
+    return response
+
 
 @app.get("/healthz")
 def healthz() -> dict[str, str]:

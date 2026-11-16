@@ -46,3 +46,14 @@ def test_predict_validates_input(client):
 def test_metrics_endpoint_exposes_prediction_counter(client):
     client.post("/predict", json={"samples": [SAMPLE]})
     assert "wine_predictions_total" in client.get("/metrics/").text
+
+
+def test_security_headers_on_every_response(client):
+    responses = (
+        client.get("/healthz"),
+        client.post("/predict", json={"samples": [SAMPLE]}),
+        client.get("/missing"),
+    )
+    for resp in responses:
+        assert resp.headers["X-Content-Type-Options"] == "nosniff"
+        assert resp.headers["Cross-Origin-Resource-Policy"] == "same-origin"
