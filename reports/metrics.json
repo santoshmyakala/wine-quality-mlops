@@ -1,0 +1,17 @@
+{
+  "test_rows": 1300,
+  "model": {
+    "rmse": 0.5977336644809678,
+    "mae": 0.4259557692307693,
+    "r2": 0.5320280158299587,
+    "exact_grade_accuracy": 0.69,
+    "within_one_grade_accuracy": 0.9738461538461538
+  },
+  "baseline_mean_predictor": {
+    "rmse": 0.8737719774992919,
+    "mae": 0.6860885718091798,
+    "r2": -1.4896363249583544e-06,
+    "exact_grade_accuracy": 0.43615384615384617,
+    "within_one_grade_accuracy": 0.9315384615384615
+  }
+}

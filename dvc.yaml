@@ -1,0 +1,34 @@
+stages:
+  prepare:
+    cmd: python -m wine_quality.prepare
+    deps:
+      - data/raw
+      - src/wine_quality/prepare.py
+    params:
+      - seed
+      - prepare
+    outs:
+      - data/processed
+  train:
+    cmd: python -m wine_quality.train
+    deps:
+      - data/processed/train.csv
+      - src/wine_quality/train.py
+      - src/wine_quality/features.py
+    params:
+      - seed
+      - train
+      - mlflow
+    outs:
+      - models/model.joblib
+      - models/run_id.txt:
+          cache: false
+  evaluate:
+    cmd: python -m wine_quality.evaluate
+    deps:
+      - data/processed/test.csv
+      - models/model.joblib
+      - src/wine_quality/evaluate.py
+    metrics:
+      - reports/metrics.json:
+          cache: false

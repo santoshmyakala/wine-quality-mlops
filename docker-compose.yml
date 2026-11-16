@@ -1,0 +1,13 @@
+# Local stack: model API + Prometheus scraping its /metrics endpoint.
+# MLflow UI runs on the host: `mlflow ui --backend-store-uri sqlite:///mlflow.db`
+services:
+  api:
+    build: .
+    image: wine-quality-api:local
+    ports: ["8000:8000"]
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    ports: ["9090:9090"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on: [api]

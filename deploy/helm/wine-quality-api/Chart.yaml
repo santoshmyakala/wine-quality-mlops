@@ -1,0 +1,6 @@
+apiVersion: v2
+name: wine-quality-api
+description: Wine quality prediction API (FastAPI + scikit-learn)
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

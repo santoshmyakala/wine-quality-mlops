@@ -1,0 +1,25 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/santoshmyakala/wine-quality-mlops
+  tag: ""            # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  requests: { cpu: 100m, memory: 256Mi }
+  limits:   { cpu: 500m, memory: 512Mi }
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+  prometheus.io/path: "/metrics/"

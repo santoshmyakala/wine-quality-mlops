@@ -1,0 +1,88 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m wine_quality.prepare
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 0d0d2b4df2ad54c2c9ea3118994da649.dir
+      size: 354872
+      nfiles: 2
+    - path: src/wine_quality/prepare.py
+      hash: md5
+      md5: 4d00b09f17d84220751a447e0cb8844d
+      size: 1541
+    params:
+      params.yaml:
+        prepare:
+          test_size: 0.2
+        seed: 42
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 189b8ef3c142dc876c64d68431fb7bf3.dir
+      size: 392195
+      nfiles: 2
+  train:
+    cmd: python -m wine_quality.train
+    deps:
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 3de2eb194f44bbdf69f9086f0caa34b4
+      size: 313610
+    - path: src/wine_quality/features.py
+      hash: md5
+      md5: 0ea9e8c1c316fb3ed2205dad5b44e056
+      size: 1245
+    - path: src/wine_quality/train.py
+      hash: md5
+      md5: 9c2f051b9b4d281eb486148a8a41cf3f
+      size: 2422
+    params:
+      params.yaml:
+        mlflow:
+          experiment: wine-quality
+          registered_model: wine-quality-regressor
+        seed: 42
+        train:
+          model: random_forest
+          random_forest:
+            n_estimators: 400
+            max_depth:
+            min_samples_leaf: 1
+            max_features: 0.5
+          gradient_boosting:
+            learning_rate: 0.05
+            max_iter: 500
+            max_leaf_nodes: 31
+          ridge:
+            alpha: 1.0
+    outs:
+    - path: models/model.joblib
+      hash: md5
+      md5: 7bd449ae4572fa3f6546851c73729a83
+      size: 64172474
+    - path: models/run_id.txt
+      hash: md5
+      md5: 5a4e95f27f3dd3184f7a27b916baec6a
+      size: 32
+  evaluate:
+    cmd: python -m wine_quality.evaluate
+    deps:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 93ae94b15c36683ee0ba826345cc1a7f
+      size: 78585
+    - path: models/model.joblib
+      hash: md5
+      md5: 7bd449ae4572fa3f6546851c73729a83
+      size: 64172474
+    - path: src/wine_quality/evaluate.py
+      hash: md5
+      md5: a2e710adaa98494d383e1939ea87ff15
+      size: 1887
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: bbed55426426ce1ba079c74b6f490f66
+      size: 456
