@@ -1,0 +1,67 @@
+- out: architecture
+  title: Wine quality — MLOps lifecycle
+  subtitle: Reproducible DVC pipeline → MLflow tracking & registry → signed container → Kubernetes with Prometheus metrics
+  grid: {dx: 225, dy: 170}
+  groups:
+    - {id: dvc, label: DVC pipeline, sub: dvc repro, icon: dvc, color: purple, box: [0, 0, 2, 2]}
+    - {id: k8s, label: Kubernetes, sub: Helm chart, icon: kubernetes, color: blue, box: [4, 1, 4, 2]}
+  nodes:
+    - {id: params, label: params.yaml, sub: model + split config, icon: doc, at: [1, 0], color: gray}
+    - {id: raw, label: data/raw, sub: red + white CSV, icon: data, at: [0, 1], color: purple}
+    - {id: prepare, label: prepare, sub: validate · stratified split, icon: python, at: [1, 1], color: purple}
+    - {id: train, label: train, sub: 5-fold CV · fit, icon: scikitlearn, at: [2, 1], color: purple}
+    - {id: evaluate, label: evaluate, sub: test set vs baseline, icon: chart, at: [2, 2], color: purple}
+    - {id: metrics, label: metrics.json, sub: reports/, icon: doc, at: [1, 2], color: gray}
+    - {id: mlflow, label: MLflow, sub: tracking + registry, icon: mlflow, at: [3, 2], color: teal, pulse: true}
+    - {id: model, label: model.joblib, sub: DVC-tracked artefact, icon: model, at: [3, 1], color: orange}
+    - {id: image, label: Container image, sub: FastAPI · non-root · signed, icon: [docker, fastapi], at: [3, 0], color: orange}
+    - {id: api, label: Model API, sub: HPA · probes · /predict, icon: [kubernetes, helm], at: [4, 1], color: blue, badge: "HPA", stack: true}
+    - {id: prom, label: Prometheus, sub: scrapes /metrics, icon: prometheus, at: [4, 2], color: orange}
+    - {id: users, label: Clients, sub: POST /predict, icon: users, at: [4, 0], color: gray}
+  edges:
+    - {from: raw, to: prepare, kind: data, packet: db}
+    - {from: params, to: prepare, kind: control}
+    - {from: params, to: train, kind: control}
+    - {from: prepare, to: train, kind: data, packet: doc}
+    - {from: train, to: evaluate, kind: data}
+    - {from: evaluate, to: metrics, kind: data, packet: doc}
+    - {from: train, to: mlflow, label: params · CV metrics, kind: metrics, at: 0.6}
+    - {from: evaluate, to: mlflow, label: test metrics, kind: metrics}
+    - {from: train, to: model, kind: data, packet: box}
+    - {from: model, to: image, label: docker build, kind: data, packet: box}
+    - {from: image, to: api, label: Argo CD sync, kind: control, at: 0.3}
+    - {from: users, to: api, label: HTTPS, kind: data, at: 0.22}
+    - {from: api, to: prom, label: /metrics, kind: metrics}
+
+- out: ci
+  title: Wine quality — CI/CD and secure delivery
+  subtitle: Every push is tested and retrained; images are scanned, smoke-tested, pushed by digest and signed before GitOps promotion
+  grid: {dx: 215, dy: 155}
+  nodes:
+    - {id: push, label: push / PR, sub: GitHub, icon: github, at: [0, 0], color: gray}
+    - {id: ruff, label: ruff, sub: lint, icon: python, at: [1, 0], color: blue}
+    - {id: pytest, label: pytest, sub: unit tests, icon: check, at: [2, 0], color: blue}
+    - {id: repro, label: dvc repro, sub: retrain + evaluate, icon: dvc, at: [3, 0], color: blue}
+    - {id: build, label: docker build, sub: model artefact baked in, icon: docker, at: [4, 0], color: purple}
+    - {id: sbom, label: SBOM, sub: SPDX via Syft, icon: sbom, at: [5, 0], color: purple}
+    - {id: scans, label: Code scans, sub: gitleaks · Semgrep · Trivy fs, icon: [key, search, trivy], at: [2, 1], color: green}
+    - {id: gate, label: Trivy image gate, sub: fail on fixable HIGH/CRIT, icon: trivy, at: [5, 1], color: green, pulse: true}
+    - {id: smoke, label: Smoke test, sub: health · 422 · metrics · UID, icon: terminal, at: [5, 2], color: purple}
+    - {id: ghcr, label: Push by digest, sub: GHCR · main only, icon: [github, registry], at: [4, 2], color: purple}
+    - {id: sign, label: cosign sign, sub: keyless OIDC + SBOM attest, icon: signature, at: [3, 2], color: green}
+    - {id: argo, label: GitOps promotion, sub: Argo CD · Kyverno verify, icon: argocd, at: [2, 2], color: orange}
+    - {id: helm, label: helm render, sub: + kubeconform, icon: helm, at: [0, 1.5], color: blue}
+  edges:
+    - {from: push, to: ruff, kind: data}
+    - {from: ruff, to: pytest, kind: data}
+    - {from: pytest, to: repro, kind: data}
+    - {from: repro, to: build, label: artefact, kind: data, packet: box}
+    - {from: build, to: sbom, kind: data, packet: box}
+    - {from: sbom, to: gate, kind: data, packet: doc}
+    - {from: gate, to: smoke, kind: data, packet: box}
+    - {from: smoke, to: ghcr, kind: data, packet: box}
+    - {from: ghcr, to: sign, label: digest, kind: secure}
+    - {from: sign, to: argo, label: signed, kind: secure}
+    - {from: push, to: scans, kind: data, route: vh, at: 0.7}
+    - {from: scans, to: build, label: must pass, kind: control, route: hv}
+    - {from: push, to: helm, kind: data}

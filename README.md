@@ -12,28 +12,19 @@ The model is deliberately simple. The point of the repository is the **engineeri
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  subgraph pipeline["DVC pipeline (dvc repro)"]
-    raw[(data/raw<br/>red + white CSV)] --> prepare[prepare<br/>merge · validate · stratified split]
-    prepare --> train[train<br/>5-fold CV · fit]
-    train --> evaluate[evaluate<br/>test set vs baseline]
-  end
-  params[/params.yaml/] -.-> prepare & train
-  train -- params · CV metrics · model --> mlflow[(MLflow<br/>tracking + registry)]
-  evaluate -- test metrics · report --> mlflow
-  train --> model[[models/model.joblib]]
-  evaluate --> metrics[/reports/metrics.json/]
-  model --> image[Docker image<br/>FastAPI · non-root]
-  image --> k8s[Kubernetes<br/>Helm · HPA · probes]
-  k8s -- /metrics --> prom[(Prometheus)]
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-dark.svg">
+  <img alt="MLOps lifecycle: raw wine data and params.yaml feed the DVC pipeline (prepare, train, evaluate); training and evaluation log to MLflow; the model is built into a FastAPI container and deployed to Kubernetes, where clients call /predict and Prometheus scrapes /metrics." src="docs/diagrams/architecture-light.svg" width="100%">
+</picture>
 
-```mermaid
-flowchart LR
-  pr[push / PR] --> lint[ruff] --> test[pytest] --> repro[dvc repro] --> build[docker build] --> smoke[container smoke test] --> trivy[Trivy scan] --> ghcr[push to GHCR<br/>main only]
-  pr --> helm[helm lint + kubeconform]
-```
+<sub>Animated diagram generated from <a href="docs/diagrams">docs/diagrams/*.yaml</a> with <a href="https://github.com/santoshmyakala/santoshmyakala/tree/main/tools/archdiagram">archdiagram</a>.</sub>
+
+### CI/CD
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/ci-dark.svg">
+  <img alt="CI/CD: push triggers ruff, pytest and dvc repro; the model artefact is built into a Docker image, given an SBOM, gated by a Trivy image scan, smoke-tested, pushed to GHCR by digest, signed keylessly with cosign and promoted via Argo CD. gitleaks, Semgrep and Trivy fs scans must pass; Helm charts are rendered and validated with kubeconform." src="docs/diagrams/ci-light.svg" width="100%">
+</picture>
 
 ## Results
 
