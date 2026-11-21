@@ -17,8 +17,6 @@ The model is deliberately simple. The point of the repository is the **engineeri
   <img alt="MLOps lifecycle: raw wine data and params.yaml feed the DVC pipeline (prepare, train, evaluate); training and evaluation log to MLflow; the model is built into a FastAPI container and deployed to Kubernetes, where clients call /predict and Prometheus scrapes /metrics." src="docs/diagrams/architecture-light.svg" width="100%">
 </picture>
 
-<sub>Animated diagram generated from <a href="docs/diagrams">docs/diagrams/*.yaml</a> with <a href="https://github.com/santoshmyakala/santoshmyakala/tree/main/tools/archdiagram">archdiagram</a>.</sub>
-
 ### CI/CD
 
 <picture>
